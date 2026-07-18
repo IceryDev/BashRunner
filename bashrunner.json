@@ -1,0 +1,15 @@
+{
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "IceryDev"
+      }
+    ],
+    "Description": "A KRunner plugin that allows running bash scripts with parameters.",
+    "EnabledByDefault": true,
+    "Icon": "user-home",
+    "License": "MIT",
+    "Name": "Bash Runner",
+    "Version": "0.1"
+  }
+}
