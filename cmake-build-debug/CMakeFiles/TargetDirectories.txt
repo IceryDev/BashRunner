@@ -1,0 +1,12 @@
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/uninstall.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/fetch-translations.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/runner_bashrunner.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/test.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/list_install_components.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/install.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/install/local.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/install/strip.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/runner_bashrunner_autogen_timestamp_deps.dir
+/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/CMakeFiles/runner_bashrunner_autogen.dir

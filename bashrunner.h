@@ -17,5 +17,6 @@ protected:
     void init() override;
 
 private:
-    QString m_triggerWord;
+    QString m_path;
+    QStringList m_triggerWords;
 };

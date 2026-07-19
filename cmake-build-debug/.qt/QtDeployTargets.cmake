@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_runner_bashrunner_FILE /home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/bin/kf6/krunner/runner_bashrunner.so)
+set(__QT_DEPLOY_TARGET_runner_bashrunner_TYPE MODULE_LIBRARY)

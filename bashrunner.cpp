@@ -1,24 +1,22 @@
 #include "bashrunner.h"
 #include "config.h"
 #include <QStandardPaths>
+#include <KLocalizedString>
+#include <KConfigGroup>
+#include <KIO/OpenUrlJob>
+#include <KNotificationJobUiDelegate>
+#include <QMimeDatabase>
+#include <QIcon>
 #include <QDir>
 
 BashRunner::BashRunner(QObject *parent, const KPluginMetaData &data)
     : AbstractRunner(parent, data)
 {
-    setTriggerWords(Config::items);
+    //setTriggerWords(Config::items);
 }
 
 void BashRunner::init()
 {
-
-    QString folderPath { QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) };
-    folderPath.append("/bashrunner_data/");
-
-    QDir dir {folderPath};
-    if (!dir.exists()) {
-        dir.mkpath(".");
-    }
 
     reloadConfiguration();
     connect(this, &AbstractRunner::prepare, this, []() {
@@ -31,27 +29,103 @@ void BashRunner::init()
 
 void BashRunner::match(KRunner::RunnerContext &context) {
     QString query = context.query();
-    if (query == QLatin1Char('.') || query == QLatin1String("..")) {
-        return;
-    }
+
     // This should not get in the way of the Help-Runner which gets triggered by queries starting with '?'
     if (query.startsWith(QLatin1Char('?'))) {
         return;
     }
 
-    if (!m_triggerWord.isEmpty()) {
-        if (!query.startsWith(m_triggerWord)) {
-            return;
+    bool matched {false};
+    for (QString q : m_triggerWords) {
+        if (query.startsWith(q.append(QLatin1Char(' ')))) {
+            query.remove(0, q.length()+1);
+            matched = true;
         }
-
-        query.remove(0, m_triggerWord.length());
     }
+    if (!matched) return;
 
     if (query.length() > 2) {
         query.prepend(QLatin1Char('*')).append(QLatin1Char('*'));
     }
+
+    QDir dir {m_path};
+    QList<KRunner::QueryMatch> matches;
+
+    qWarning() << query << m_path;
+    for (const QString &file : dir.entryList(QStringList(query))) {
+        const QString path = dir.absoluteFilePath(file);
+        if (!path.startsWith(m_path) || !path.endsWith(QLatin1String(".sh"), Qt::CaseInsensitive)) {
+            continue;
+        }
+
+
+        if (!context.isValid()) {
+            return;
+        }
+
+
+        QMimeDatabase mimeDb {};
+        KRunner::QueryMatch match(this);
+        match.setText(i18n("Run %1", path));
+        match.setData(path);
+        match.setId(path);
+        QIcon icon = QIcon::fromTheme(mimeDb.mimeTypeForFile(path).iconName());
+        match.setIcon(icon);
+
+        if (file.compare(query, Qt::CaseInsensitive)) {
+            match.setRelevance(1.0);
+        } else {
+            match.setRelevance(0.8);
+        }
+
+        matches.append(match);
+    }
+
+    context.addMatches(matches);
 }
 
+void BashRunner::run(const KRunner::RunnerContext & /*context*/, const KRunner::QueryMatch &match)
+{
+    // KIO::OpenUrlJob autodeletes itself, so we can just create it and forget it!
+    auto *job = new KIO::OpenUrlJob(QUrl::fromLocalFile(match.data().toString()));
+    job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
+    job->setRunExecutables(false);
+    job->start();
+}
+
+void BashRunner::reloadConfiguration()
+{
+    KConfigGroup c = config();
+    m_triggerWords = c.readEntry("trigger", QStringList());
+
+    for (qsizetype i = 0; i < m_triggerWords.length();) {
+        auto& word = m_triggerWords[i];
+        if (!word.isEmpty()) {
+            word.append(QLatin1Char(' '));
+            ++i;
+        }
+        else {
+            m_triggerWords.remove(i);
+        }
+    }
+
+    if (m_triggerWords.isEmpty()) m_triggerWords.append(Config::defaultPrefix);
+
+    m_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    m_path.append("/bashrunner_data/");
+
+    QDir dir {m_path};
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+    
+    QList<KRunner::RunnerSyntax> syntaxes;
+    KRunner::RunnerSyntax syntax(QStringLiteral("%1:q:").arg(m_triggerWords.constFirst()), i18n("Run script :q: in the %1 folder", m_path));
+    syntaxes.append(syntax);
+    setSyntaxes(syntaxes);
+
+    setTriggerWords(m_triggerWords);
+}
 
 K_PLUGIN_CLASS_WITH_JSON(BashRunner, "bashrunner.json")
 #include "bashrunner.moc"
