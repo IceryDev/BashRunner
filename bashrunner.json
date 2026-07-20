@@ -7,7 +7,7 @@
     ],
     "Description": "A KRunner plugin that allows running bash scripts with parameters.",
     "EnabledByDefault": true,
-    "Icon": "user-home",
+    "Icon": "utilities-terminal",
     "License": "MIT",
     "Name": "Bash Runner",
     "Version": "0.1"

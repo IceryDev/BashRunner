@@ -36,56 +36,63 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     }
 
     QString usedPrefix {};
-    bool matched {false};
     for (QString q : m_triggerWords) {
         if (query.startsWith(q)) {
-            query.remove(0, q.length());
-            usedPrefix = q;
-            matched = true;
+            if (usedPrefix.isEmpty() || usedPrefix.length() < q.length()) {
+                usedPrefix = q;
+            }
         }
     }
-    if (!matched) return;
+    if (usedPrefix.isEmpty()) return;
 
-    if (query.length() > 1) {
-        query.prepend(QLatin1Char('*')).append(QLatin1Char('*'));
-    }
+    //Check whether the user is still changing parameters or started a new search (erasing the param block)
+    if (m_paramStartIndex != -1 && query.length() < m_paramStartIndex) m_paramStartIndex = -1;
 
-    QDir dir {m_path};
+    query.remove(0, usedPrefix.length());
+
     QList<KRunner::QueryMatch> matches;
 
-    qWarning() << query << m_path;
-    for (const QString &file : dir.entryList(QStringList(query))) {
-        const QString path = dir.absoluteFilePath(file);
-        if (!path.startsWith(m_path) || !path.endsWith(QLatin1String(".sh"), Qt::CaseInsensitive)) {
-            continue;
+    if (m_paramStartIndex == -1) {
+        if (query.length() > 1) {
+            query.prepend(QLatin1Char('*')).append(QLatin1Char('*'));
         }
 
+        QDir dir {m_path};
 
-        if (!context.isValid()) {
-            return;
+        qWarning() << query << m_path;
+        for (const QString &file : dir.entryList(QStringList(query))) {
+            const QString path = dir.absoluteFilePath(file);
+            if (!path.startsWith(m_path) || !path.endsWith(QLatin1String(".sh"), Qt::CaseInsensitive)) {
+                continue;
+            }
+
+            if (!context.isValid()) {
+                return;
+            }
+
+            KRunner::QueryMatch match(this);
+            match.setText(i18n("Run %1", path.split(QLatin1Char('/')).last()));
+            match.setData(QStringList({usedPrefix, path}));
+            match.setId(path);
+            addIcon(match, path);
+
+            if (file.compare(query, Qt::CaseInsensitive)) {
+                match.setRelevance(1.0);
+            } else {
+                match.setRelevance(0.8);
+            }
+            match.setCategoryRelevance(KRunner::QueryMatch::CategoryRelevance::Highest);
+
+            matches.append(match);
         }
-
-
+    }
+    else {
         KRunner::QueryMatch match(this);
-        match.setText(i18n("Run %1", path.split(QLatin1Char('/')).last()));
-        match.setData(QStringList({usedPrefix, path}));
-        match.setId(path);
-        //Change both of the literals below for any change
-        if (QIcon::hasThemeIcon(QStringLiteral("utilities-terminal"))) {
-            match.setIconName(QStringLiteral("utilities-terminal"));
-        } else {
-            QMimeDatabase mimeDb {};
-            QIcon icon = QIcon::fromTheme(mimeDb.mimeTypeForFile(path).iconName());
-            match.setIcon(icon);
-        }
-
-
-        if (file.compare(query, Qt::CaseInsensitive)) {
-            match.setRelevance(1.0);
-        } else {
-            match.setRelevance(0.8);
-        }
-        match.setCategoryRelevance(KRunner::QueryMatch::CategoryRelevance::Highest);
+        //Send the parameters to ::run and it will process them
+        match.setText(i18n("Enter parameters for %1 : accepts %2", m_selectedPath.split(QLatin1Char('/')).last(), getParamCount(m_params)));
+        match.setData(QStringList({usedPrefix, m_selectedPath}));
+        match.setId(m_selectedPath);
+        addIcon(match, m_selectedPath);
 
         matches.append(match);
     }
@@ -98,10 +105,11 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
     if (!match.data().isValid() || match.data().isNull()) return;
 
     QStringList args {match.data().toStringList()};
-    //If there are only two parameters it means this is step 1.
+    //If there are only two parameters it means this is step 1 or takes no parameters.
     if (args.length() <= 2) {
         QString command {args.at(0)};
         command.append(args.at(1).split(QLatin1Char('/')).last());
+        m_selectedPath = args.at(1);
 
         QFile file(args.at(1));
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -116,18 +124,24 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
                 break;
             }
 
+            if (line.startsWith(Config::emptyParams)) {
+                runBash(args.at(1), std::nullopt);
+                return;
+            }
+
             if (!line.trimmed().isEmpty() && !line.startsWith(QLatin1Char('#'))) break;
         } 
 
-        command.append(Config::argsPrefix.arg(QString::number(getParamCount(m_params)), m_params));
+        command.append(Config::argsPrefix.arg(
+            ((m_params == Config::argsPlaceholder) ? QLatin1String("?") : QString::number(getParamCount(m_params))),
+            m_params));
 
-        context.requestQueryStringUpdate(command, static_cast<int>(command.length()-m_params.length()));
+        m_paramStartIndex = static_cast<int>(command.length()-m_params.length());
+        context.requestQueryStringUpdate(command, m_paramStartIndex);
     }
     else {
-        const QStringList params {args.at(3)};
-        auto *job = new KIO::CommandLauncherJob(args.at(2), params);
-        job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
-        job->start();
+        const QStringList params {args.at(2)};
+        runBash(args.at(1), params);
     }
 }
 
