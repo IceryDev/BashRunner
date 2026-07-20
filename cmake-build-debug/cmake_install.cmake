@@ -43,25 +43,17 @@ if(NOT DEFINED CMAKE_OBJDUMP)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "BashRunner" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}/usr/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}/usr/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so")
     file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}/usr/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so"
+         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so"
          RPATH "")
   endif()
-  list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/usr/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so")
-  if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
-    message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
-  endif()
-  if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
-    message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
-  endif()
-  file(INSTALL DESTINATION "/usr/lib/qt6/plugins/kf6/krunner" TYPE MODULE FILES "/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/bin/kf6/krunner/runner_bashrunner.so")
-  if(EXISTS "$ENV{DESTDIR}/usr/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}/usr/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/qt6/plugins/kf6/krunner" TYPE MODULE FILES "/home/icerydev/Projects/CLionProjects/BashRunner/cmake-build-debug/bin/kf6/krunner/runner_bashrunner.so")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so")
     if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/usr/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so")
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/qt6/plugins/kf6/krunner/runner_bashrunner.so")
     endif()
   endif()
 endif()

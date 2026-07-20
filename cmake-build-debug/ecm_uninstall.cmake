@@ -10,7 +10,7 @@ foreach(file ${files})
     message(STATUS "Uninstalling $ENV{DESTDIR}${file}")
     if(IS_SYMLINK "$ENV{DESTDIR}${file}" OR EXISTS "$ENV{DESTDIR}${file}")
         execute_process(
-            COMMAND "/usr/bin/cmake" -E remove "$ENV{DESTDIR}${file}"
+            COMMAND "/home/icerydev/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/bin/cmake" -E remove "$ENV{DESTDIR}${file}"
             RESULT_VARIABLE rm_retval
             )
         if(NOT "${rm_retval}" STREQUAL 0)

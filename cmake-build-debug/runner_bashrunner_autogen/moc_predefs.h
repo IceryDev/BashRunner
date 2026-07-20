@@ -43,6 +43,7 @@
 #define __FINITE_MATH_ONLY__ 0
 #define __cpp_variable_templates 201304L
 #define __FLT32X_MAX_EXP__ 1024
+#define QT_NO_NARROWING_CONVERSIONS_IN_CONNECT 1
 #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1 1
 #define __FLT32_HAS_DENORM__ 1
 #define __UINT_FAST8_MAX__ 0xff
@@ -127,6 +128,7 @@
 #define __gnu_linux__ 1
 #define __INT16_MAX__ 0x7fff
 #define __FLT64_MIN_EXP__ (-1021)
+#define QT_NO_URL_CAST_FROM_STRING 1
 #define __cpp_using_enum 201907L
 #define __DEC64X_EPSILON__ 1E-33D64x
 #define __FLT64X_MIN_10_EXP__ (-4931)
@@ -192,6 +194,7 @@
 #define __LONG_LONG_WIDTH__ 64
 #define __cpp_initializer_lists 200806L
 #define __FLT32_MAX_EXP__ 128
+#define QT_NO_CAST_FROM_ASCII 1
 #define ABI_ID "ELF"
 #define __cpp_hex_float 201603L
 #define __GXX_ABI_VERSION 1021
@@ -225,6 +228,7 @@
 #define __FLT_DIG__ 6
 #define __NO_INLINE__ 1
 #define __DEC_EVAL_METHOD__ 2
+#define QT_NO_KEYWORDS 1
 #define __FLT_MANT_DIG__ 24
 #define __LDBL_DECIMAL_DIG__ 21
 #define __VERSION__ "16.1.1 20260625"
@@ -238,12 +242,14 @@
 #define __FLT128_MAX_EXP__ 16384
 #define __cpp_conditional_explicit 201806L
 #define __FLT32_MANT_DIG__ 24
+#define QT_USE_QSTRINGBUILDER 1
 #define __cpp_decltype 200707L
 #define __FLOAT_WORD_ORDER__ __ORDER_LITTLE_ENDIAN__
 #define SIZEOF_DPTR (sizeof(void*))
 #define __FLT32X_MIN_EXP__ (-1021)
 #define __cpp_inline_variables 201606L
 #define __cpp_aggregate_paren_init 201902L
+#define QT_STRICT_ITERATORS 1
 #define __STDC_IEC_60559_COMPLEX__ 201404L
 #define __cpp_aggregate_bases 201603L
 #define __BFLT16_MIN__ 1.17549435082228750796873653722224568e-38BF16
@@ -326,7 +332,6 @@
 #define QT_NETWORK_LIB 1
 #define __FLT32_DENORM_MIN__ 1.40129846432481707092372958328991613e-45F32
 #define __SIG_ATOMIC_WIDTH__ 32
-#define __GCC_DESTRUCTIVE_SIZE 64
 #define __INT_LEAST64_TYPE__ long int
 #define __INT16_TYPE__ short int
 #define __INT_LEAST8_TYPE__ signed char
@@ -346,6 +351,7 @@
 #define __EXCEPTIONS 1
 #define __UINT16_C(c) c
 #define __PTRDIFF_WIDTH__ 64
+#define QT_NO_CAST_TO_ASCII 1
 #define __cpp_range_based_for 201603L
 #define __INT_FAST16_WIDTH__ 64
 #define __FLT64_HAS_INFINITY__ 1
@@ -411,6 +417,7 @@
 #define __cpp_return_type_deduction 201304L
 #define __SIZEOF_WCHAR_T__ 4
 #define __GNUC_PATCHLEVEL__ 1
+#define QT_NO_CAST_FROM_BYTEARRAY 1
 #define __FLT128_NORM_MAX__ 1.18973149535723176508575932662800702e+4932F128
 #define _LARGEFILE64_SOURCE 1
 #define __FLT64_NORM_MAX__ 1.79769313486231570814527423731704357e+308F64
@@ -421,6 +428,7 @@
 #define __FLT64_EPSILON__ 2.22044604925031308084726333618164062e-16F64
 #define __STDCPP_THREADS__ 1
 #define __BFLT16_HAS_DENORM__ 1
+#define QT_NO_FOREACH 1
 #define __GNUC_STDC_INLINE__ 1
 #define __FLT64_HAS_DENORM__ 1
 #define __FLT32_EPSILON__ 1.19209289550781250000000000000000000e-7F32
@@ -432,6 +440,7 @@
 #define __FLT32X_MAX__ 1.79769313486231570814527423731704357e+308F32x
 #define __DBL_NORM_MAX__ double(1.79769313486231570814527423731704357e+308L)
 #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
+#define __GCC_DESTRUCTIVE_SIZE 64
 #define __INTMAX_WIDTH__ 64
 #define __cpp_runtime_arrays 198712L
 #define __FLT32_DIG__ 6

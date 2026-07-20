@@ -3,7 +3,7 @@ project(BashRunner)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(KF5_MIN_VERSION "5.90")
+set(KF6_MIN_VERSION "6.0")
 
 # Include the Extra-CMake-Modules project
 find_package(ECM ${KF6_MIN_VERSION} REQUIRED NO_MODULE)
@@ -30,4 +30,5 @@ target_link_libraries(runner_bashrunner
         KF6::Runner
         KF6::KIOWidgets
         KF6::Notifications
+        Qt6::Core
 )

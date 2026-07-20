@@ -17,8 +17,8 @@ end
 set -x --path XDG_CONFIG_DIRS "/etc/xdg" $XDG_CONFIG_DIRS
 
 set -x --path QT_PLUGIN_PATH "/usr/lib/qt6/plugins" $QT_PLUGIN_PATH
-set -x --path QML2_IMPORT_PATH "/usr/lib/qml" $QML2_IMPORT_PATH
+set -x --path QML2_IMPORT_PATH "/usr/lib/qt6/qml" $QML2_IMPORT_PATH
 
-set -x --path QT_QUICK_CONTROLS_STYLE_PATH "/usr/lib/qml/QtQuick/Controls.2/" $QT_QUICK_CONTROLS_STYLE_PATH
+set -x --path QT_QUICK_CONTROLS_STYLE_PATH "/usr/lib/qt6/qml/QtQuick/Controls.2/" $QT_QUICK_CONTROLS_STYLE_PATH
 
 set -x --path PYTHONPATH "/usr/lib/python3.14/site-packages" $PYTHONPATH

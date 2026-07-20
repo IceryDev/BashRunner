@@ -37,8 +37,8 @@ void BashRunner::match(KRunner::RunnerContext &context) {
 
     bool matched {false};
     for (QString q : m_triggerWords) {
-        if (query.startsWith(q.append(QLatin1Char(' ')))) {
-            query.remove(0, q.length()+1);
+        if (query.startsWith(q)) {
+            query.remove(0, q.length());
             matched = true;
         }
     }
@@ -53,6 +53,7 @@ void BashRunner::match(KRunner::RunnerContext &context) {
 
     qWarning() << query << m_path;
     for (const QString &file : dir.entryList(QStringList(query))) {
+        qWarning() << "match called, query:" << context.query();
         const QString path = dir.absoluteFilePath(file);
         if (!path.startsWith(m_path) || !path.endsWith(QLatin1String(".sh"), Qt::CaseInsensitive)) {
             continue;
@@ -64,19 +65,26 @@ void BashRunner::match(KRunner::RunnerContext &context) {
         }
 
 
-        QMimeDatabase mimeDb {};
         KRunner::QueryMatch match(this);
-        match.setText(i18n("Run %1", path));
+        match.setText(i18n("Run %1", path.split(QLatin1Char('/')).last()));
         match.setData(path);
         match.setId(path);
-        QIcon icon = QIcon::fromTheme(mimeDb.mimeTypeForFile(path).iconName());
-        match.setIcon(icon);
+        //Change both of the literals below for any change
+        if (QIcon::hasThemeIcon(QStringLiteral("utilities-terminal"))) {
+            match.setIconName(QStringLiteral("utilities-terminal"));
+        } else {
+            QMimeDatabase mimeDb {};
+            QIcon icon = QIcon::fromTheme(mimeDb.mimeTypeForFile(path).iconName());
+            match.setIcon(icon);
+        }
+
 
         if (file.compare(query, Qt::CaseInsensitive)) {
             match.setRelevance(1.0);
         } else {
             match.setRelevance(0.8);
         }
+        match.setCategoryRelevance(KRunner::QueryMatch::CategoryRelevance::Highest);
 
         matches.append(match);
     }
@@ -112,17 +120,19 @@ void BashRunner::reloadConfiguration()
     if (m_triggerWords.isEmpty()) m_triggerWords.append(Config::defaultPrefix);
 
     m_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    m_path.append("/bashrunner_data/");
+    m_path.append(QLatin1String("/bashrunner_data/"));
 
     QDir dir {m_path};
     if (!dir.exists()) {
-        dir.mkpath(".");
+        dir.mkpath(QLatin1String("."));
     }
     
     QList<KRunner::RunnerSyntax> syntaxes;
-    KRunner::RunnerSyntax syntax(QStringLiteral("%1:q:").arg(m_triggerWords.constFirst()), i18n("Run script :q: in the %1 folder", m_path));
+    KRunner::RunnerSyntax syntax(QStringLiteral("%1 :q:").arg(m_triggerWords.constFirst()), i18n("Run script :q: in the %1 folder", m_path));
     syntaxes.append(syntax);
     setSyntaxes(syntaxes);
+
+    qWarning() << "I came this far!";
 
     setTriggerWords(m_triggerWords);
 }
