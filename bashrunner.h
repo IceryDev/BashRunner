@@ -17,7 +17,11 @@ protected:
     void init() override;
 
 private:
+    QString m_params;
     QString m_path;
-    QString m_selected;
     QStringList m_triggerWords;
+
+    static qsizetype getParamCount(const QString& s) {
+        return s.count(QLatin1Char('<'));
+    }
 };

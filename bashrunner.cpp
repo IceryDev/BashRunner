@@ -3,7 +3,7 @@
 #include <QStandardPaths>
 #include <KLocalizedString>
 #include <KConfigGroup>
-#include <KIO/OpenUrlJob>
+#include <KIO/CommandLauncherJob>
 #include <KNotificationJobUiDelegate>
 #include <QMimeDatabase>
 #include <QIcon>
@@ -55,7 +55,6 @@ void BashRunner::match(KRunner::RunnerContext &context) {
 
     qWarning() << query << m_path;
     for (const QString &file : dir.entryList(QStringList(query))) {
-        qWarning() << "match called, query:" << context.query();
         const QString path = dir.absoluteFilePath(file);
         if (!path.startsWith(m_path) || !path.endsWith(QLatin1String(".sh"), Qt::CaseInsensitive)) {
             continue;
@@ -99,20 +98,37 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
     if (!match.data().isValid() || match.data().isNull()) return;
 
     QStringList args {match.data().toStringList()};
-    QString command {args.at(0)};
-    command.append(args.at(1).split(QLatin1Char('/')).last());
+    //If there are only two parameters it means this is step 1.
+    if (args.length() <= 2) {
+        QString command {args.at(0)};
+        command.append(args.at(1).split(QLatin1Char('/')).last());
 
-    QString placeholder {QLatin1String("<args>")};
-    command.append(Config::argsPlaceholder.arg(placeholder));
+        QFile file(args.at(1));
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            return;
 
-    context.requestQueryStringUpdate(command, static_cast<int>(command.length()-placeholder.length()));
+        m_params = Config::argsPlaceholder;
+        QTextStream in(&file);
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (line.startsWith(Config::paramsDefinition)) {
+                m_params = line.remove(0, Config::paramsDefinition.length());
+                break;
+            }
 
-    qWarning() << command;
+            if (!line.trimmed().isEmpty() && !line.startsWith(QLatin1Char('#'))) break;
+        } 
 
-    // auto *job = new KIO::OpenUrlJob(QUrl::fromLocalFile(match.data().toString()));
-    // job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
-    // job->setRunExecutables(false);
-    // job->start();
+        command.append(Config::argsPrefix.arg(QString::number(getParamCount(m_params)), m_params));
+
+        context.requestQueryStringUpdate(command, static_cast<int>(command.length()-m_params.length()));
+    }
+    else {
+        const QStringList params {args.at(3)};
+        auto *job = new KIO::CommandLauncherJob(args.at(2), params);
+        job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
+        job->start();
+    }
 }
 
 void BashRunner::reloadConfiguration()
