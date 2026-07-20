@@ -18,5 +18,6 @@ protected:
 
 private:
     QString m_path;
+    QString m_selected;
     QStringList m_triggerWords;
 };

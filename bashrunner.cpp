@@ -35,16 +35,18 @@ void BashRunner::match(KRunner::RunnerContext &context) {
         return;
     }
 
+    QString usedPrefix {};
     bool matched {false};
     for (QString q : m_triggerWords) {
         if (query.startsWith(q)) {
             query.remove(0, q.length());
+            usedPrefix = q;
             matched = true;
         }
     }
     if (!matched) return;
 
-    if (query.length() > 2) {
+    if (query.length() > 1) {
         query.prepend(QLatin1Char('*')).append(QLatin1Char('*'));
     }
 
@@ -67,7 +69,7 @@ void BashRunner::match(KRunner::RunnerContext &context) {
 
         KRunner::QueryMatch match(this);
         match.setText(i18n("Run %1", path.split(QLatin1Char('/')).last()));
-        match.setData(path);
+        match.setData(QStringList({usedPrefix, path}));
         match.setId(path);
         //Change both of the literals below for any change
         if (QIcon::hasThemeIcon(QStringLiteral("utilities-terminal"))) {
@@ -92,13 +94,25 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     context.addMatches(matches);
 }
 
-void BashRunner::run(const KRunner::RunnerContext & /*context*/, const KRunner::QueryMatch &match)
+void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::QueryMatch &match)
 {
-    // KIO::OpenUrlJob autodeletes itself, so we can just create it and forget it!
-    auto *job = new KIO::OpenUrlJob(QUrl::fromLocalFile(match.data().toString()));
-    job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
-    job->setRunExecutables(false);
-    job->start();
+    if (!match.data().isValid() || match.data().isNull()) return;
+
+    QStringList args {match.data().toStringList()};
+    QString command {args.at(0)};
+    command.append(args.at(1).split(QLatin1Char('/')).last());
+
+    QString placeholder {QLatin1String("<args>")};
+    command.append(Config::argsPlaceholder.arg(placeholder));
+
+    context.requestQueryStringUpdate(command, static_cast<int>(command.length()-placeholder.length()));
+
+    qWarning() << command;
+
+    // auto *job = new KIO::OpenUrlJob(QUrl::fromLocalFile(match.data().toString()));
+    // job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
+    // job->setRunExecutables(false);
+    // job->start();
 }
 
 void BashRunner::reloadConfiguration()
