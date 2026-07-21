@@ -22,9 +22,10 @@ protected:
 
 private:
     int m_paramStartIndex {-1};
-    QString m_selectedPath;
-    QString m_params;
-    QString m_path;
+    QString m_selectedPath; //Selected script's file path
+    QString m_params; //Parameter structure of the script
+    QString m_path; //Working dir
+    QString m_userInput;
     QStringList m_triggerWords;
 
     static qsizetype getParamCount(const QString& s) {

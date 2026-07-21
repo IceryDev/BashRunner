@@ -4,8 +4,6 @@
 #include <KLocalizedString>
 #include <KConfigGroup>
 #include <KIO/CommandLauncherJob>
-#include <KNotificationJobUiDelegate>
-#include <QMimeDatabase>
 #include <QIcon>
 #include <QDir>
 
@@ -19,18 +17,14 @@ void BashRunner::init()
 {
 
     reloadConfiguration();
-    connect(this, &AbstractRunner::prepare, this, []() {
-        // Initialize data for the match session. This gets called from the main thread
-    });
-    connect(this, &AbstractRunner::teardown, this, []() {
-        // Cleanup data from the match session. This gets called from the main thread
-    });
+    connect(this, &AbstractRunner::prepare, this, []() {});
+    connect(this, &AbstractRunner::teardown, this, []() {});
 }
 
 void BashRunner::match(KRunner::RunnerContext &context) {
     QString query = context.query();
 
-    // This should not get in the way of the Help-Runner which gets triggered by queries starting with '?'
+    // Avoid collision with helper runner
     if (query.startsWith(QLatin1Char('?'))) {
         return;
     }
@@ -45,8 +39,8 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     }
     if (usedPrefix.isEmpty()) return;
 
-    //Check whether the user is still changing parameters or started a new search (erasing the param block)
-    if (m_paramStartIndex != -1 && query.length() < m_paramStartIndex) m_paramStartIndex = -1;
+    //Check whether the user is still changing parameters or started a new search (erasing the param block or changing the file name)
+    if (m_paramStartIndex != -1 && (query.length() < m_paramStartIndex || !query.startsWith(m_userInput))) m_paramStartIndex = -1;
 
     query.remove(0, usedPrefix.length());
 
@@ -59,7 +53,7 @@ void BashRunner::match(KRunner::RunnerContext &context) {
 
         QDir dir {m_path};
 
-        qWarning() << query << m_path;
+        //qWarning() << query << m_path;
         for (const QString &file : dir.entryList(QStringList(query))) {
             const QString path = dir.absoluteFilePath(file);
             if (!path.startsWith(m_path) || !path.endsWith(QLatin1String(".sh"), Qt::CaseInsensitive)) {
@@ -89,8 +83,9 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     else {
         KRunner::QueryMatch match(this);
         //Send the parameters to ::run and it will process them
-        match.setText(i18n("Enter parameters for %1 : accepts %2", m_selectedPath.split(QLatin1Char('/')).last(), getParamCount(m_params)));
-        match.setData(QStringList({usedPrefix, m_selectedPath}));
+        match.setText(i18n("Enter parameters for %1 : accepts %2", m_selectedPath.split(QLatin1Char('/')).last(),
+                ((m_params == Config::argsPlaceholder) ? QLatin1String("?") : QString::number(getParamCount(m_params)))));
+        match.setData(QStringList({usedPrefix, m_selectedPath, query.slice(m_paramStartIndex-usedPrefix.length())}));
         match.setId(m_selectedPath);
         addIcon(match, m_selectedPath);
 
@@ -110,6 +105,7 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
         QString command {args.at(0)};
         command.append(args.at(1).split(QLatin1Char('/')).last());
         m_selectedPath = args.at(1);
+        m_userInput = command;
 
         QFile file(args.at(1));
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -132,16 +128,30 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
             if (!line.trimmed().isEmpty() && !line.startsWith(QLatin1Char('#'))) break;
         } 
 
-        command.append(Config::argsPrefix.arg(
-            ((m_params == Config::argsPlaceholder) ? QLatin1String("?") : QString::number(getParamCount(m_params))),
-            m_params));
+        command.append(Config::argsPrefix.arg(m_params));
 
         m_paramStartIndex = static_cast<int>(command.length()-m_params.length());
         context.requestQueryStringUpdate(command, m_paramStartIndex);
     }
     else {
-        const QStringList params {args.at(2)};
-        runBash(args.at(1), params);
+
+        //Match non-quoted args or quoted args with escaped characters.
+        const QRegularExpression reg {QStringLiteral(R"(\"((?:[^\"\\]|\\.)*)\"|(\S+))")};
+        QRegularExpressionMatchIterator regMatch = reg.globalMatch(args.at(2));
+
+        QStringList params {};
+        params.clear();
+        while (regMatch.hasNext()) {
+            if (QRegularExpressionMatch m = regMatch.next(); m.hasCaptured(1)) {
+                params.append(m.captured(1));
+            } else {
+                params.append(m.captured(2));
+            }
+        }
+
+        if (!params.isEmpty())
+            runBash(args.at(1), params);
+        else runBash(args.at(1), std::nullopt);
     }
 }
 
@@ -175,8 +185,6 @@ void BashRunner::reloadConfiguration()
     KRunner::RunnerSyntax syntax(QStringLiteral("%1 :q:").arg(m_triggerWords.constFirst()), i18n("Run script :q: in the %1 folder", m_path));
     syntaxes.append(syntax);
     setSyntaxes(syntaxes);
-
-    qWarning() << "I came this far!";
 
     setTriggerWords(m_triggerWords);
 }
