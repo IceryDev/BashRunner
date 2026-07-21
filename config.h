@@ -8,4 +8,5 @@ namespace Config {
     inline const QString argsPrefix {QLatin1String(" =%1")};
     inline const QString paramsDefinition {QLatin1String("#params: ")};
     inline const QString emptyParams {QLatin1String("#noparam")};
+    inline const QString dirFlag {QLatin1String("-d")};
 }

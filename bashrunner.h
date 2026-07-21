@@ -2,6 +2,8 @@
 
 #include <KRunner/AbstractRunner>
 #include <KIO/CommandLauncherJob>
+#include <KIO/OpenUrlJob>
+#include <KIO/JobUiDelegateFactory>
 #include <KNotificationJobUiDelegate>
 #include <QIcon>
 #include <QMimeDatabase>
@@ -37,6 +39,12 @@ private:
         job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
         job->start();
         m_paramStartIndex = -1;
+    }
+
+    void openExplorer() const {
+        auto *job = new KIO::OpenUrlJob(QUrl::fromLocalFile(m_path));
+        job->setUiDelegate(KIO::createDefaultJobUiDelegate());
+        job->start();
     }
 
     static void addIcon(KRunner::QueryMatch& match, const QString& path) {

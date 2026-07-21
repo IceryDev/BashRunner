@@ -4,6 +4,7 @@
 #include <KLocalizedString>
 #include <KConfigGroup>
 #include <KIO/CommandLauncherJob>
+#include <KIO/OpenUrlJob>
 #include <QIcon>
 #include <QDir>
 
@@ -42,9 +43,19 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     //Check whether the user is still changing parameters or started a new search (erasing the param block or changing the file name)
     if (m_paramStartIndex != -1 && (query.length() < m_paramStartIndex || !query.startsWith(m_userInput))) m_paramStartIndex = -1;
 
+    QList<KRunner::QueryMatch> matches;
     query.remove(0, usedPrefix.length());
 
-    QList<KRunner::QueryMatch> matches;
+    if (query == Config::dirFlag) {
+        KRunner::QueryMatch match(this);
+        match.setData(QStringList({usedPrefix}));
+        match.setIconName(QStringLiteral("user-home"));
+        match.setText(QStringLiteral("Open script folder for Bash Runner."));
+        match.setId(m_path);
+        matches.append(match);
+        context.addMatches(matches);
+        return;
+    }
 
     if (m_paramStartIndex == -1) {
         if (query.length() > 1) {
@@ -101,7 +112,10 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
 
     QStringList args {match.data().toStringList()};
     //If there are only two parameters it means this is step 1 or takes no parameters.
-    if (args.length() <= 2) {
+    if (args.length() <= 1) {
+        openExplorer();
+    }
+    else if (args.length() == 2) {
         QString command {args.at(0)};
         command.append(args.at(1).split(QLatin1Char('/')).last());
         m_selectedPath = args.at(1);

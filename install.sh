@@ -85,3 +85,5 @@ sudo cmake --install build
 
 kbuildsycoca6 --noincremental
 kquitapp6 krunner 2>/dev/null
+
+echo "Installed successfully."

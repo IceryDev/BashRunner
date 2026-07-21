@@ -4,7 +4,7 @@ A KRunner plugin that allows passing parameters to custom bash scripts.
 ### Usage
 #### Initialisation
 Bash Runner creates a folder to search for bash scripts. 
-To open this folder, open KRunner using your shortcut (Default: Alt + Space), type the prefix for Bash Runner (Default: "/sh") and confirm. 
+To open this folder, open KRunner using your shortcut (Default: Alt + Space), type the prefix for Bash Runner (Default: "/sh") plus the directory command (So that it becomes "/sh -d") and confirm. 
 Place any bash scripts (must end with ".sh") you want to run into that folder and the runner will now recognise your file.
 
 #### Script Format
