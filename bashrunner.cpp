@@ -95,7 +95,7 @@ void BashRunner::match(KRunner::RunnerContext &context) {
         KRunner::QueryMatch match(this);
         //Send the parameters to ::run and it will process them
         match.setText(i18n("Enter parameters for %1 : accepts %2", m_selectedPath.split(QLatin1Char('/')).last(),
-                ((m_params == Config::argsPlaceholder) ? QLatin1String("?") : QString::number(getParamCount(m_params)))));
+                ((m_params == Config::argsPlaceholder) ? QLatin1String("?") : QString::number(getParams(m_params).length()))));
         match.setData(QStringList({usedPrefix, m_selectedPath, query.slice(m_paramStartIndex-usedPrefix.length())}));
         match.setId(m_selectedPath);
         addIcon(match, m_selectedPath);
@@ -113,9 +113,11 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
     QStringList args {match.data().toStringList()};
     //If there are only two parameters it means this is step 1 or takes no parameters.
     if (args.length() <= 1) {
+        
         openExplorer();
     }
     else if (args.length() == 2) {
+
         QString command {args.at(0)};
         command.append(args.at(1).split(QLatin1Char('/')).last());
         m_selectedPath = args.at(1);
@@ -149,21 +151,7 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
     }
     else {
 
-        //Match non-quoted args or quoted args with escaped characters.
-        const QRegularExpression reg {QStringLiteral(R"(\"((?:[^\"\\]|\\.)*)\"|(\S+))")};
-        QRegularExpressionMatchIterator regMatch = reg.globalMatch(args.at(2));
-
-        QStringList params {};
-        params.clear();
-        while (regMatch.hasNext()) {
-            if (QRegularExpressionMatch m = regMatch.next(); m.hasCaptured(1)) {
-                params.append(m.captured(1));
-            } else {
-                params.append(m.captured(2));
-            }
-        }
-
-        if (!params.isEmpty())
+        if (QStringList params {getParams(args.at(2))}; !params.isEmpty())
             runBash(args.at(1), params);
         else runBash(args.at(1), std::nullopt);
     }

@@ -34,6 +34,23 @@ private:
         return s.count(QLatin1Char('<'));
     }
 
+    static QStringList getParams(const QString& s) {
+        //Match non-quoted args or quoted args with escaped characters.
+        const QRegularExpression reg {QStringLiteral(R"(\"((?:[^\"\\]|\\.)*)\"|(\S+))")};
+        QRegularExpressionMatchIterator regMatch = reg.globalMatch(s);
+
+        QStringList params {};
+        params.clear();
+        while (regMatch.hasNext()) {
+            if (QRegularExpressionMatch m = regMatch.next(); m.hasCaptured(1)) {
+                params.append(m.captured(1));
+            } else {
+                params.append(m.captured(2));
+            }
+        }
+        return params;
+    }
+
     void runBash(const QString& path, const std::optional<QStringList>& params) {
         auto* job = new KIO::CommandLauncherJob(path, params.value_or(QStringList{}));
         job->setUiDelegate(new KNotificationJobUiDelegate(KJobUiDelegate::AutoErrorHandlingEnabled));
