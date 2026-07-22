@@ -1,5 +1,5 @@
 #include "bashrunner.h"
-#include "config.h"
+#include "../config.h"
 #include <QStandardPaths>
 #include <KLocalizedString>
 #include <KConfigGroup>
@@ -30,11 +30,9 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     }
 
     QString usedPrefix {};
-    for (QString q : m_triggerWords) {
-        if (query.startsWith(q)) {
-            if (usedPrefix.isEmpty() || usedPrefix.length() < q.length()) {
-                usedPrefix = q;
-            }
+    if (query.startsWith(m_triggerWord)) {
+        if (usedPrefix.isEmpty() || usedPrefix.length() < m_triggerWord.length()) {
+            usedPrefix = m_triggerWord;
         }
     }
     if (usedPrefix.isEmpty()) return;
@@ -159,20 +157,9 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
 void BashRunner::reloadConfiguration()
 {
     KConfigGroup c = config();
-    m_triggerWords = c.readEntry("trigger", QStringList());
+    m_triggerWord = c.readEntry("trigger", QString());
 
-    for (qsizetype i = 0; i < m_triggerWords.length();) {
-        auto& word = m_triggerWords[i];
-        if (!word.isEmpty()) {
-            word.append(QLatin1Char(' '));
-            ++i;
-        }
-        else {
-            m_triggerWords.remove(i);
-        }
-    }
-
-    if (m_triggerWords.isEmpty()) m_triggerWords.append(Config::defaultPrefix);
+    if (m_triggerWord.trimmed().isEmpty()) m_triggerWord = Config::defaultPrefix;
 
     m_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     m_path.append(QLatin1String("/bashrunner_data/"));
@@ -183,11 +170,11 @@ void BashRunner::reloadConfiguration()
     }
     
     QList<KRunner::RunnerSyntax> syntaxes;
-    KRunner::RunnerSyntax syntax(QStringLiteral("%1 :q:").arg(m_triggerWords.constFirst()), i18n("Run script :q: in the %1 folder", m_path));
+    KRunner::RunnerSyntax syntax(QStringLiteral("%1 :q:").arg(m_triggerWord), i18n("Run script :q: in the %1 folder", m_path));
     syntaxes.append(syntax);
     setSyntaxes(syntaxes);
 
-    setTriggerWords(m_triggerWords);
+    setTriggerWords(QStringList {m_triggerWord});
 }
 
 K_PLUGIN_CLASS_WITH_JSON(BashRunner, "bashrunner.json")

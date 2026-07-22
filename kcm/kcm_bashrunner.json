@@ -1,0 +1,18 @@
+{
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "IceryDev"
+      }
+    ],
+    "Description": "Configure BashRunner prefixes and folder",
+    "Icon": "utilities-terminal",
+    "License": "MIT",
+    "Name": "Bash Runner",
+    "FormFactors": [
+      "desktop"
+    ],
+    "Version": "0.1"
+  },
+  "X-KDE-Keywords": "bash,script,run"
+}
