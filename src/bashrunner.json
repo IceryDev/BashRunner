@@ -11,5 +11,6 @@
     "License": "MIT",
     "Name": "Bash Runner",
     "Version": "0.1"
-  }
+  },
+  "X-KDE-ConfigModule": "plasma/kcms/systemsettings/kcm_bashrunner"
 }

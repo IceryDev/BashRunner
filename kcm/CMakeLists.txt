@@ -10,8 +10,9 @@ kconfig_target_kcfg_file(kcm_bashrunner
         MUTATORS
         DEFAULT_VALUE_GETTERS
         GENERATE_PROPERTIES
+        GENERATE_MOC
+        QML_REGISTRATION
         PARENT_IN_CONSTRUCTOR
-        SINGLETON
 )
 
 

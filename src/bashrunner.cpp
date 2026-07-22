@@ -156,10 +156,11 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
 
 void BashRunner::reloadConfiguration()
 {
-    KConfigGroup c = config();
+    const KConfigGroup c = config();
     m_triggerWord = c.readEntry("trigger", QString());
 
     if (m_triggerWord.trimmed().isEmpty()) m_triggerWord = Config::defaultPrefix;
+    m_triggerWord.append(QLatin1Char(' '));
 
     m_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     m_path.append(QLatin1String("/bashrunner_data/"));

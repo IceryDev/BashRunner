@@ -22,4 +22,4 @@ find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Quick Gui Qml)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS I18n Config Runner KIO Notifications KCMUtils)
 
 add_subdirectory(src)
-#add_subdirectory(kcm)
+add_subdirectory(kcm)
