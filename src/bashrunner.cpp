@@ -1,5 +1,5 @@
 #include "bashrunner.h"
-#include "config.h"
+#include "../runnerconfig.h"
 #include <QStandardPaths>
 #include <KLocalizedString>
 #include <KConfigGroup>
@@ -30,11 +30,9 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     }
 
     QString usedPrefix {};
-    for (QString q : m_triggerWords) {
-        if (query.startsWith(q)) {
-            if (usedPrefix.isEmpty() || usedPrefix.length() < q.length()) {
-                usedPrefix = q;
-            }
+    if (query.startsWith(m_triggerWord)) {
+        if (usedPrefix.isEmpty() || usedPrefix.length() < m_triggerWord.length()) {
+            usedPrefix = m_triggerWord;
         }
     }
     if (usedPrefix.isEmpty()) return;
@@ -45,7 +43,7 @@ void BashRunner::match(KRunner::RunnerContext &context) {
     QList<KRunner::QueryMatch> matches;
     query.remove(0, usedPrefix.length());
 
-    if (query == Config::dirFlag) {
+    if (query == RunnerConfig::dirFlag) {
         KRunner::QueryMatch match(this);
         match.setData(QStringList({usedPrefix}));
         match.setIconName(QStringLiteral("user-home"));
@@ -94,7 +92,7 @@ void BashRunner::match(KRunner::RunnerContext &context) {
         KRunner::QueryMatch match(this);
         //Send the parameters to ::run and it will process them
         match.setText(i18n("Enter parameters for %1 : accepts %2", m_selectedPath.split(QLatin1Char('/')).last(),
-                ((m_params == Config::argsPlaceholder) ? QLatin1String("?") : QString::number(getParams(m_params).length()))));
+                ((m_params == RunnerConfig::argsPlaceholder) ? QLatin1String("?") : QString::number(getParams(m_params).length()))));
         match.setData(QStringList({usedPrefix, m_selectedPath, query.slice(m_paramStartIndex-usedPrefix.length())}));
         match.setId(m_selectedPath);
         addIcon(match, m_selectedPath);
@@ -126,16 +124,16 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
 
-        m_params = Config::argsPlaceholder;
+        m_params = RunnerConfig::argsPlaceholder;
         QTextStream in(&file);
         while (!in.atEnd()) {
             QString line = in.readLine();
-            if (line.startsWith(Config::paramsDefinition)) {
-                m_params = line.remove(0, Config::paramsDefinition.length());
+            if (line.startsWith(RunnerConfig::paramsDefinition)) {
+                m_params = line.remove(0, RunnerConfig::paramsDefinition.length());
                 break;
             }
 
-            if (line.startsWith(Config::emptyParams)) {
+            if (line.startsWith(RunnerConfig::emptyParams)) {
                 runBash(args.at(1), std::nullopt);
                 return;
             }
@@ -143,7 +141,7 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
             if (!line.trimmed().isEmpty() && !line.startsWith(QLatin1Char('#'))) break;
         } 
 
-        command.append(Config::argsPrefix.arg(m_params));
+        command.append(RunnerConfig::argsPrefix.arg(m_params));
 
         m_paramStartIndex = static_cast<int>(command.length()-m_params.length());
         context.requestQueryStringUpdate(command, m_paramStartIndex);
@@ -158,24 +156,16 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
 
 void BashRunner::reloadConfiguration()
 {
-    KConfigGroup c = config();
-    m_triggerWords = c.readEntry("trigger", QStringList());
+    const KConfigGroup c = config();
+    m_triggerWord = c.readEntry("trigger", QString());
 
-    for (qsizetype i = 0; i < m_triggerWords.length();) {
-        auto& word = m_triggerWords[i];
-        if (!word.isEmpty()) {
-            word.append(QLatin1Char(' '));
-            ++i;
-        }
-        else {
-            m_triggerWords.remove(i);
-        }
+    if (m_triggerWord.trimmed().isEmpty()) m_triggerWord = RunnerConfig::defaultPrefix;
+
+    if (const bool appendSpace = c.readEntry("appendTrailingSpace", true); appendSpace) {
+        m_triggerWord.append(QLatin1Char(' '));
     }
 
-    if (m_triggerWords.isEmpty()) m_triggerWords.append(Config::defaultPrefix);
-
-    m_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    m_path.append(QLatin1String("/bashrunner_data/"));
+    m_path = c.readPathEntry("filePath", RunnerConfig::defaultDir);
 
     QDir dir {m_path};
     if (!dir.exists()) {
@@ -183,11 +173,11 @@ void BashRunner::reloadConfiguration()
     }
     
     QList<KRunner::RunnerSyntax> syntaxes;
-    KRunner::RunnerSyntax syntax(QStringLiteral("%1 :q:").arg(m_triggerWords.constFirst()), i18n("Run script :q: in the %1 folder", m_path));
+    KRunner::RunnerSyntax syntax(QStringLiteral("%1:q:").arg(m_triggerWord), i18n("Run script :q: in the %1 folder", m_path));
     syntaxes.append(syntax);
     setSyntaxes(syntaxes);
 
-    setTriggerWords(m_triggerWords);
+    setTriggerWords(QStringList {m_triggerWord});
 }
 
 K_PLUGIN_CLASS_WITH_JSON(BashRunner, "bashrunner.json")

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name="krunnerrc"/>
+  <include>&quot;../runnerconfig.h&quot;</include>
+  <group name="runner_bashrunner" parentGroupName="Runners">
+    <entry name="filePath" type="Path">
+      <label>File path for bash scripts.</label>
+      <default code="true">RunnerConfig::defaultDir</default>
+    </entry>
+    <entry name="appendTrailingSpace" type="Bool">
+      <label>Option to include trailing space for prefix.</label>
+      <default>true</default>
+    </entry>
+    <entry name="trigger" type="String">
+      <label>Trigger prefix for the runner.</label>
+      <default code="true">RunnerConfig::defaultPrefix</default>
+    </entry>
+  </group>
+</kcfg>

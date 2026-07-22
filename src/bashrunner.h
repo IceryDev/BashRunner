@@ -28,7 +28,7 @@ private:
     QString m_params; //Parameter structure of the script
     QString m_path; //Working dir
     QString m_userInput;
-    QStringList m_triggerWords;
+    QString m_triggerWord;
 
     static qsizetype getParamCount(const QString& s) {
         return s.count(QLatin1Char('<'));
