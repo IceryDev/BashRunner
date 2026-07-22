@@ -3,7 +3,6 @@
 #include <QStandardPaths>
 #include <KLocalizedString>
 #include <KConfigGroup>
-#include <KIO/CommandLauncherJob>
 #include <KIO/OpenUrlJob>
 #include <QIcon>
 #include <QDir>
@@ -113,7 +112,7 @@ void BashRunner::run(const KRunner::RunnerContext & context, const KRunner::Quer
     QStringList args {match.data().toStringList()};
     //If there are only two parameters it means this is step 1 or takes no parameters.
     if (args.length() <= 1) {
-        
+
         openExplorer();
     }
     else if (args.length() == 2) {
