@@ -31,6 +31,9 @@ The headers act as a guidance tool and do not affect the capability of the runne
 In this case, replace the parameters with your arguments and confirm.
 
 **Tip:** You are not required to use angled brackets in this step; feel free to place any frequently used parameters there so that the runner autocompletes to those.
+
+_**If the script does not run with the runner:**_ Check its execute permissions; if there aren't any, add them with `chmod +x /path/`
+
 #### Argument Syntax
 You don't have to surround each argument with anything, but in this case, the spaces will act as a delimiter. If you want to include a space in a parameter, surround it with double quotes. 
 
