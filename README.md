@@ -10,7 +10,7 @@ Place any bash scripts (must end with ".sh") you want to run into that folder, a
 #### Script Format
 There are two header types you can add to your bash script to make using this runner easier; however, they are optional to use:
 - **The script has no parameters:** Place `#noparam` after `#!/bin/bash`.
-- **The script has parameters:** Place `#params <param1> <param2> ...` instead.
+- **The script has parameters:** Place `#params: <param1> <param2> ...` instead.
 
 #### Running Scripts
 <p align="center">
