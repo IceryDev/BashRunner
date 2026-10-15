@@ -38,7 +38,7 @@ check_debian() {
 
 check_fedora() {
   for pkg in "${pkgs[@]}"; do
-      if ! dnf info "$pkg" &> /dev/null; then
+      if ! rpm -q "$pkg" &> /dev/null; then
           missing+=("$pkg")
       fi
   done
