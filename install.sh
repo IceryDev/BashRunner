@@ -54,6 +54,16 @@ case "$ID" in
       install_cmd="sudo apt-get install -y"
       ;;
     fedora)
+      pkgs=(extra-cmake-modules
+              cmake
+              ninja-build
+              gcc-c++
+              qt6-qtbase-devel
+              kf6-ki18n-devel
+              kf6-kconfig-devel
+              kf6-krunner-devel
+              kf6-kio-devel
+              kf6-knotifications-devel)
       check_fn=check_fedora
       install_cmd="sudo dnf install"
       ;;
