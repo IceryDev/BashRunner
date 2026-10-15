@@ -36,6 +36,14 @@ check_debian() {
   done
 }
 
+check_fedora() {
+  for pkg in "${pkgs[@]}"; do
+      if ! dnf info "$pkg" &> /dev/null; then
+          missing+=("$pkg")
+      fi
+  done
+}
+
 case "$ID" in
     arch)
       check_fn=check_arch
@@ -44,6 +52,10 @@ case "$ID" in
     debian|ubuntu)
       check_fn=check_debian
       install_cmd="sudo apt-get install -y"
+      ;;
+    fedora)
+      check_fn=check_fedora
+      install_cmd="sudo dnf install"
       ;;
     *)
       case "$ID_LIKE" in
